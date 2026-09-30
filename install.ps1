@@ -1,7 +1,7 @@
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$releaseTag = 'installer-v0.1.2'
+$releaseTag = 'installer-v0.1.3'
 $releaseRepository = 'Dartsnut/dartsnut-cli'
 $releaseRoot = "https://github.com/$releaseRepository/releases/download/$releaseTag"
 $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
@@ -9,11 +9,11 @@ $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitect
 switch ($architecture) {
     'X64' {
         $asset = 'dartsnut-rpi-installer-x86_64-pc-windows-msvc.exe'
-        $expectedSha256 = '8f1900cf59cf48e5117e1f41cc2a86d29402a99b851048a1d49163e201eb67e9'
+        $expectedSha256 = '12e6e064c41cc0a9852ac4b9f60a86ea0643f360002b43219efb8ded78153853'
     }
     'Arm64' {
         $asset = 'dartsnut-rpi-installer-aarch64-pc-windows-msvc.exe'
-        $expectedSha256 = 'a631b02486958f51e149055c6048cd21e8219b31f4996f71e7ffba96005b7807'
+        $expectedSha256 = 'e35f664a94dc1c10afdf7c91ddb77dccc87f30ed6916a1363537d207b57d2e1e'
     }
     default {
         throw "dartsnut-rpi-installer: unsupported Windows CPU architecture '$architecture'. See https://github.com/$releaseRepository/releases/tag/$releaseTag for supported assets."
