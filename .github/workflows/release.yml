@@ -1,0 +1,121 @@
+name: Release installer
+
+on:
+  push:
+    tags:
+      - 'installer-v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            asset: dartsnut-rpi-installer-x86_64-unknown-linux-gnu
+            cross: false
+            windows: false
+          - runner: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            asset: dartsnut-rpi-installer-aarch64-unknown-linux-gnu
+            cross: true
+            windows: false
+          - runner: macos-15-intel
+            target: x86_64-apple-darwin
+            asset: dartsnut-rpi-installer-x86_64-apple-darwin
+            cross: false
+            windows: false
+          - runner: macos-14
+            target: aarch64-apple-darwin
+            asset: dartsnut-rpi-installer-aarch64-apple-darwin
+            cross: false
+            windows: false
+          - runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            asset: dartsnut-rpi-installer-x86_64-pc-windows-msvc.exe
+            cross: false
+            windows: true
+          - runner: windows-11-arm
+            target: aarch64-pc-windows-msvc
+            asset: dartsnut-rpi-installer-aarch64-pc-windows-msvc.exe
+            cross: false
+            windows: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Build aarch64 Linux with cross
+        if: matrix.cross
+        run: |
+          cargo install cross --locked
+          cross build --locked --release --target "${{ matrix.target }}"
+        shell: bash
+
+      - name: Build target natively
+        if: ${{ !matrix.cross }}
+        run: cargo build --locked --release --target "${{ matrix.target }}"
+        shell: bash
+
+      - name: Name Windows asset
+        if: matrix.windows
+        run: Copy-Item -LiteralPath 'target/${{ matrix.target }}/release/dartsnut-rpi-installer.exe' -Destination '${{ matrix.asset }}'
+        shell: pwsh
+
+      - name: Name Unix asset
+        if: ${{ !matrix.windows }}
+        run: cp "target/${{ matrix.target }}/release/dartsnut-rpi-installer" "${{ matrix.asset }}"
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: ${{ matrix.asset }}
+          if-no-files-found: error
+          retention-days: 1
+
+  publish:
+    name: Publish GitHub Release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          pattern: dartsnut-rpi-installer-*
+          merge-multiple: true
+
+      - name: Generate SHA256SUMS
+        run: |
+          cd dist
+          sha256sum \
+            dartsnut-rpi-installer-x86_64-unknown-linux-gnu \
+            dartsnut-rpi-installer-aarch64-unknown-linux-gnu \
+            dartsnut-rpi-installer-x86_64-apple-darwin \
+            dartsnut-rpi-installer-aarch64-apple-darwin \
+            dartsnut-rpi-installer-x86_64-pc-windows-msvc.exe \
+            dartsnut-rpi-installer-aarch64-pc-windows-msvc.exe \
+            > SHA256SUMS
+        shell: bash
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: |
+            dist/dartsnut-rpi-installer-x86_64-unknown-linux-gnu
+            dist/dartsnut-rpi-installer-aarch64-unknown-linux-gnu
+            dist/dartsnut-rpi-installer-x86_64-apple-darwin
+            dist/dartsnut-rpi-installer-aarch64-apple-darwin
+            dist/dartsnut-rpi-installer-x86_64-pc-windows-msvc.exe
+            dist/dartsnut-rpi-installer-aarch64-pc-windows-msvc.exe
+            dist/SHA256SUMS

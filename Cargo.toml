@@ -1,0 +1,24 @@
+[package]
+name = "dartsnut-rpi-installer"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.88"
+default-run = "dartsnut-rpi-installer"
+
+[[bin]]
+name = "dartsnut-rpi-installer"
+path = "src/main.rs"
+
+[dependencies]
+anyhow = "1.0"
+clap = { version = "4.5", features = ["derive"] }
+crossterm = "0.29"
+if-addrs = "0.13"
+ratatui = "0.30"
+russh = "0.63"
+secrecy = "0.10"
+tokio = { version = "1.44", features = ["rt-multi-thread", "macros", "time", "net", "sync"] }
+zeroize = "1.8"
+
+[dev-dependencies]
+serde_json = "1.0"
