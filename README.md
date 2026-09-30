@@ -18,7 +18,7 @@ The installer uses the target's fixed `/home/rpi/dartsnut_rpi` path. Recovery pr
 
 ## Release
 
-`Dartsnut/dartsnut-cli` publishes the `installer-v0.1.0` tag through `.github/workflows/release.yml`. The release contains six platform binaries and `SHA256SUMS`; each root bootstrap pins the corresponding published SHA-256 value and refuses to run an unverified download. Future releases must update the tag and all six pins before directing users to the new release.
+`Dartsnut/dartsnut-cli` publishes `installer-v0.1.1` through `.github/workflows/release.yml`. The release contains six platform binaries and `SHA256SUMS`; each root bootstrap pins the corresponding published SHA-256 value and refuses to run an unverified download. Version 0.1.1 bounds optional mDNS discovery so the port-22 scan starts promptly. Future releases must update the tag and all six pins before directing users to the new release.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Dartsnut/dartsnut-cli/main/install.sh | sh

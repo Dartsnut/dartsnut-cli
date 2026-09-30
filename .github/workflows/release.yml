@@ -113,14 +113,23 @@ jobs:
             > SHA256SUMS
         shell: bash
 
-      - uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          files: |
-            dist/dartsnut-rpi-installer-x86_64-unknown-linux-gnu
-            dist/dartsnut-rpi-installer-aarch64-unknown-linux-gnu
-            dist/dartsnut-rpi-installer-x86_64-apple-darwin
-            dist/dartsnut-rpi-installer-aarch64-apple-darwin
-            dist/dartsnut-rpi-installer-x86_64-pc-windows-msvc.exe
-            dist/dartsnut-rpi-installer-aarch64-pc-windows-msvc.exe
-            dist/SHA256SUMS
+      - name: Publish verified GitHub Release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${{ github.ref_name }}"
+          repo="${{ github.repository }}"
+          state=$(gh release view "$tag" --repo "$repo" --json isDraft --jq .isDraft 2>/dev/null) || state=absent
+          if [ "$state" = false ]; then
+            echo "Release $tag is already published"
+            exit 0
+          fi
+          if [ "$state" = absent ]; then
+            gh release create "$tag" --repo "$repo" --verify-tag --draft --title "$tag"
+          fi
+          gh release upload "$tag" dist/* --repo "$repo" --clobber
+          mkdir verify
+          gh release download "$tag" --repo "$repo" --dir verify
+          (cd verify && sha256sum --check SHA256SUMS)
+          gh release edit "$tag" --repo "$repo" --draft=false --latest

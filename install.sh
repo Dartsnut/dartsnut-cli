@@ -2,7 +2,7 @@
 set -eu
 umask 077
 
-RELEASE_TAG=installer-v0.1.0
+RELEASE_TAG=installer-v0.1.1
 RELEASE_REPOSITORY=Dartsnut/dartsnut-cli
 RELEASE_ROOT="https://github.com/$RELEASE_REPOSITORY/releases/download/$RELEASE_TAG"
 
@@ -43,10 +43,10 @@ else
 fi
 
 case "$asset" in
-    dartsnut-rpi-installer-x86_64-unknown-linux-gnu) expected_sha256=03374580febaea66b38801c4e25fe3cfb188d58671b69a64dbcaccd106fad90c ;;
-    dartsnut-rpi-installer-aarch64-unknown-linux-gnu) expected_sha256=4bbadeddfb5d2f2c84f6f5b7b8ac04175ee34c02b1b447b1c64f2de869d056a3 ;;
-    dartsnut-rpi-installer-x86_64-apple-darwin) expected_sha256=c8fdc8009ad71306f4c2831d1596da2de31f3d615a55a9e3f0a91153898a803f ;;
-    dartsnut-rpi-installer-aarch64-apple-darwin) expected_sha256=21cd3f3a76dcc22b452a40bae1882342ccba4dc89149f66a4e1e54b907a0ddf7 ;;
+    dartsnut-rpi-installer-x86_64-unknown-linux-gnu) expected_sha256=db39f9cd7b149990333854423c5596ab9704677eb96f4b8034df5a73c19a7432 ;;
+    dartsnut-rpi-installer-aarch64-unknown-linux-gnu) expected_sha256=86a78dbc5fde8763f4148e962f0888d323a49edb30ee929ea3dd7d0f9f8dc63b ;;
+    dartsnut-rpi-installer-x86_64-apple-darwin) expected_sha256=ce1543fe7967a8d9fa3763a0dff406620845cb82eeb12c3314dd792f57e2a2d1 ;;
+    dartsnut-rpi-installer-aarch64-apple-darwin) expected_sha256=cd5e23037fabc69bdeb6682840014e0dce25f2a5b0afe60f44f332b00d2b6185 ;;
 esac
 if [ -z "$expected_sha256" ]; then
     die "No verified SHA-256 pin is available for '$asset'; refusing to run an unverified binary."
