@@ -19,11 +19,12 @@ jobs:
           - runner: windows-11-arm
             arch: aarch64
     steps:
-      - name: Verify published bootstrap and tamper rejection
+      - uses: actions/checkout@v4
+      - name: Verify checkout bootstrap and tamper rejection
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $source = Invoke-RestMethod -Uri 'https://raw.githubusercontent.com/Dartsnut/dartsnut-cli/main/install.ps1'
+          $source = Get-Content -LiteralPath install.ps1 -Raw
           $bootstrap = [ScriptBlock]::Create($source)
           $output = & $bootstrap --version | Out-String
           if ($LASTEXITCODE -ne 0 -or $output -notmatch 'dartsnut-rpi-installer 0\.1\.2') {
