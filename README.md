@@ -18,7 +18,7 @@ The installer uses the target's fixed `/home/rpi/dartsnut_rpi` path. Recovery pr
 
 ## Release
 
-`Dartsnut/dartsnut-cli` publishes the `installer-v0.1.0` tag through `.github/workflows/release.yml`. The release must contain six platform binaries and `SHA256SUMS`. Before publishing installation instructions on `main`, verify each asset with `--version`, copy the six exact SHA-256 values from the published `SHA256SUMS` into `install.sh` and `install.ps1`, and test both bootstraps. An unpinned or mismatched asset is never executed.
+`Dartsnut/dartsnut-cli` publishes the `installer-v0.1.0` tag through `.github/workflows/release.yml`. The release contains six platform binaries and `SHA256SUMS`; each root bootstrap pins the corresponding published SHA-256 value and refuses to run an unverified download. Future releases must update the tag and all six pins before directing users to the new release.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Dartsnut/dartsnut-cli/main/install.sh | sh

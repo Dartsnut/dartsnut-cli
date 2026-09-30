@@ -9,13 +9,11 @@ $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitect
 switch ($architecture) {
     'X64' {
         $asset = 'dartsnut-rpi-installer-x86_64-pc-windows-msvc.exe'
-        # Intentionally unpinned until the release asset can be obtained and hashed.
-        $expectedSha256 = ''
+        $expectedSha256 = '7033de8a25042f84549aa97ba212ffd897aaafd8df87c30ab8fb043290a0b84a'
     }
     'Arm64' {
         $asset = 'dartsnut-rpi-installer-aarch64-pc-windows-msvc.exe'
-        # Intentionally unpinned until the release asset can be obtained and hashed.
-        $expectedSha256 = ''
+        $expectedSha256 = '9339255714e69334c2d1887aba719aa4b20ffe1dcd50fe502c93de2b1b1e29de'
     }
     default {
         throw "dartsnut-rpi-installer: unsupported Windows CPU architecture '$architecture'. See https://github.com/$releaseRepository/releases/tag/$releaseTag for supported assets."
@@ -29,7 +27,7 @@ if (-not (Get-Command Get-FileHash -ErrorAction SilentlyContinue)) {
     throw 'dartsnut-rpi-installer: Get-FileHash is unavailable; refusing to run an unverified binary.'
 }
 if ($expectedSha256 -notmatch '\A[0-9a-fA-F]{64}\z') {
-    throw "dartsnut-rpi-installer: no verified SHA-256 pin is available for '$asset'; refusing to download or execute an unverified binary. Publish '$releaseTag', then pin the asset's actual SHA-256."
+    throw "dartsnut-rpi-installer: invalid SHA-256 pin for '$asset'; refusing to run an unverified binary."
 }
 
 $tempDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("dartsnut-rpi-installer-" + [guid]::NewGuid().ToString('N'))

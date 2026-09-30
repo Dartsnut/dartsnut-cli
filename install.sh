@@ -42,15 +42,14 @@ else
     die 'Neither shasum nor sha256sum is available; refusing to run an unverified binary.'
 fi
 
-# These pins remain empty until the first release assets can be obtained and hashed.
 case "$asset" in
-    dartsnut-rpi-installer-x86_64-unknown-linux-gnu) expected_sha256= ;;
-    dartsnut-rpi-installer-aarch64-unknown-linux-gnu) expected_sha256= ;;
-    dartsnut-rpi-installer-x86_64-apple-darwin) expected_sha256= ;;
-    dartsnut-rpi-installer-aarch64-apple-darwin) expected_sha256= ;;
+    dartsnut-rpi-installer-x86_64-unknown-linux-gnu) expected_sha256=03374580febaea66b38801c4e25fe3cfb188d58671b69a64dbcaccd106fad90c ;;
+    dartsnut-rpi-installer-aarch64-unknown-linux-gnu) expected_sha256=4bbadeddfb5d2f2c84f6f5b7b8ac04175ee34c02b1b447b1c64f2de869d056a3 ;;
+    dartsnut-rpi-installer-x86_64-apple-darwin) expected_sha256=c8fdc8009ad71306f4c2831d1596da2de31f3d615a55a9e3f0a91153898a803f ;;
+    dartsnut-rpi-installer-aarch64-apple-darwin) expected_sha256=21cd3f3a76dcc22b452a40bae1882342ccba4dc89149f66a4e1e54b907a0ddf7 ;;
 esac
 if [ -z "$expected_sha256" ]; then
-    die "No verified SHA-256 pin is available for '$asset'; refusing to download or execute an unverified binary. Publish '$RELEASE_TAG', then pin the asset's actual SHA-256."
+    die "No verified SHA-256 pin is available for '$asset'; refusing to run an unverified binary."
 fi
 case "$expected_sha256" in
     *[!0123456789abcdefABCDEF]*|'')
