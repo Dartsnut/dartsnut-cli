@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 $releaseTag = 'installer-v0.1.0'
-$releaseRepository = 'Dartsnut/dartsnut-prepare'
+$releaseRepository = 'Dartsnut/dartsnut-cli'
 $releaseRoot = "https://github.com/$releaseRepository/releases/download/$releaseTag"
 $architecture = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
 
@@ -29,7 +29,7 @@ if (-not (Get-Command Get-FileHash -ErrorAction SilentlyContinue)) {
     throw 'dartsnut-rpi-installer: Get-FileHash is unavailable; refusing to run an unverified binary.'
 }
 if ($expectedSha256 -notmatch '\A[0-9a-fA-F]{64}\z') {
-    throw "dartsnut-rpi-installer: no verified SHA-256 pin is available for '$asset'. Dartsnut/dartsnut-prepare and release '$releaseTag' returned GitHub API HTTP 404 during implementation; refusing to download or execute an unverified binary. Publish the release, then replace this fail-closed pin with the asset's actual SHA-256."
+    throw "dartsnut-rpi-installer: no verified SHA-256 pin is available for '$asset'; refusing to download or execute an unverified binary. Publish '$releaseTag', then pin the asset's actual SHA-256."
 }
 
 $tempDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("dartsnut-rpi-installer-" + [guid]::NewGuid().ToString('N'))

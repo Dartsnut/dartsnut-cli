@@ -3,7 +3,7 @@ set -eu
 umask 077
 
 RELEASE_TAG=installer-v0.1.0
-RELEASE_REPOSITORY=Dartsnut/dartsnut-prepare
+RELEASE_REPOSITORY=Dartsnut/dartsnut-cli
 RELEASE_ROOT="https://github.com/$RELEASE_REPOSITORY/releases/download/$RELEASE_TAG"
 
 die() {
@@ -50,7 +50,7 @@ case "$asset" in
     dartsnut-rpi-installer-aarch64-apple-darwin) expected_sha256= ;;
 esac
 if [ -z "$expected_sha256" ]; then
-    die "No verified SHA-256 pin is available for '$asset'. Dartsnut/dartsnut-prepare and release '$RELEASE_TAG' returned GitHub API HTTP 404 during implementation; refusing to download or execute an unverified binary. Publish the release, then replace this fail-closed pin with the asset's actual SHA-256."
+    die "No verified SHA-256 pin is available for '$asset'; refusing to download or execute an unverified binary. Publish '$RELEASE_TAG', then pin the asset's actual SHA-256."
 fi
 case "$expected_sha256" in
     *[!0123456789abcdefABCDEF]*|'')
