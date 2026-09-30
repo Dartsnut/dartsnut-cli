@@ -1,0 +1,45 @@
+name: Verify Windows installer bootstraps
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Bootstrap ${{ matrix.arch }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            arch: x86_64
+          - runner: windows-11-arm
+            arch: aarch64
+    steps:
+      - name: Verify published bootstrap and tamper rejection
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $source = Invoke-RestMethod -Uri 'https://raw.githubusercontent.com/Dartsnut/dartsnut-cli/main/install.ps1'
+          $bootstrap = [ScriptBlock]::Create($source)
+          $output = & $bootstrap --version | Out-String
+          if ($LASTEXITCODE -ne 0 -or $output -notmatch 'dartsnut-rpi-installer 0\.1\.2') {
+            throw "Verified bootstrap did not launch the expected binary: $output"
+          }
+          Write-Host $output
+
+          function Invoke-WebRequest {
+            [CmdletBinding()]
+            param([string]$Uri, [string]$OutFile, [switch]$UseBasicParsing)
+            [System.IO.File]::WriteAllBytes($OutFile, [byte[]](0, 1, 2, 3))
+          }
+          try {
+            & $bootstrap --version | Out-Null
+            throw 'Tampered download was executed'
+          } catch {
+            if ($_.Exception.Message -notmatch 'SHA-256 mismatch') { throw }
+            Write-Host 'Tampered download rejected before execution'
+          }
