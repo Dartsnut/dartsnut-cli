@@ -76,7 +76,7 @@ impl Ui {
         }
 
         let backend = CrosstermBackend::new(stdout);
-        let mut terminal = match Terminal::new(backend) {
+        let terminal = match Terminal::new(backend) {
             Ok(terminal) => terminal,
             Err(error) => {
                 let mut stdout = io::stdout();
@@ -85,12 +85,6 @@ impl Ui {
                 return Err(error).context("create terminal backend");
             }
         };
-        if let Err(error) = terminal.clear() {
-            let mut stdout = io::stdout();
-            let _ = execute!(stdout, LeaveAlternateScreen, Show);
-            let _ = disable_raw_mode();
-            return Err(error).context("clear terminal");
-        }
 
         Ok(Self {
             terminal,

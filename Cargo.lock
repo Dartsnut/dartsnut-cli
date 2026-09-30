@@ -543,6 +543,7 @@ dependencies = [
  "crossterm_winapi",
  "derive_more",
  "document-features",
+ "filedescriptor",
  "mio",
  "parking_lot",
  "rustix",
@@ -701,7 +702,7 @@ dependencies = [
 
 [[package]]
 name = "dartsnut-rpi-installer"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "clap",

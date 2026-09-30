@@ -1,6 +1,6 @@
 [package]
 name = "dartsnut-rpi-installer"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2024"
 rust-version = "1.88"
 default-run = "dartsnut-rpi-installer"
@@ -12,7 +12,7 @@ path = "src/main.rs"
 [dependencies]
 anyhow = "1.0"
 clap = { version = "4.5", features = ["derive"] }
-crossterm = "0.29"
+crossterm = { version = "0.29", features = ["use-dev-tty"] }
 if-addrs = "0.13"
 ratatui = "0.30"
 russh = "0.63"
