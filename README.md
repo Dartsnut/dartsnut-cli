@@ -18,7 +18,7 @@ The installer uses the target's fixed `/home/rpi/dartsnut_rpi` path. Recovery pr
 
 ## Release
 
-`Dartsnut/dartsnut-cli` publishes `installer-v0.1.2` through `.github/workflows/release.yml`. The release contains six platform binaries and `SHA256SUMS`; each root bootstrap pins the corresponding published SHA-256 value and refuses to run an unverified download. Version 0.1.2 bounds optional mDNS discovery and supports interactive input when `curl | sh` reopens `/dev/tty`. For future releases, update the Cargo version and tag, publish and verify all six assets, pin their hashes in both bootstraps, and update the expected version in `.github/workflows/bootstrap-smoke.yml` before directing users to the new release.
+`Dartsnut/dartsnut-cli` publishes `installer-v0.1.3` through `.github/workflows/release.yml`. The release contains six platform binaries and `SHA256SUMS`; each root bootstrap pins the corresponding published SHA-256 value and refuses to run an unverified download. Version 0.1.3 adds Esc, q, Ctrl+C, and terminal-loss cancellation during `setup.sh`; cancellation terminates the remote setup process group and may leave partial changes. Future releases must update the Cargo version and tag, publish and verify all six assets, pin their hashes in both bootstraps, and update the expected version in `.github/workflows/bootstrap-smoke.yml` before directing users to the new release.
 
 ```sh
 curl -fsSL https://raw.githubusercontent.com/Dartsnut/dartsnut-cli/main/install.sh | sh

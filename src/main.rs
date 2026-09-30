@@ -20,6 +20,11 @@ pub struct Cli {
     pub user: Option<String>,
 }
 
+// Loopback tests share ephemeral ports and must not race close/reopen phases.
+#[cfg(test)]
+pub(crate) static LOOPBACK_LISTENER_TEST_LOCK: tokio::sync::Mutex<()> =
+    tokio::sync::Mutex::const_new(());
+
 #[tokio::main]
 async fn main() -> Result<()> {
     let cli = Cli::parse();

@@ -777,10 +777,14 @@ async fn sudo_command(
         let attempt = {
             let sudo_password = sudo.password(ssh_password);
             if stage == Stage::Setup {
+                ui.setup_running()?;
                 session
-                    .sudo_exec_stream(command, stdin, sudo_password, |chunk, _stderr| {
-                        ui.log(&String::from_utf8_lossy(chunk));
-                    })
+                    .sudo_exec_setup_cancellable(
+                        command,
+                        sudo_password,
+                        |chunk, _stderr| ui.log(&String::from_utf8_lossy(chunk)),
+                        crate::ui::wait_for_setup_cancel(),
+                    )
                     .await
             } else {
                 session.sudo_exec(command, stdin, sudo_password).await
@@ -802,6 +806,10 @@ async fn sudo_command(
             }
             Err(error) => {
                 let displayed = error_output(&error);
+                if error.downcast_ref::<ssh::CommandCancelled>().is_some() {
+                    ui.notice(&format!("{error:#}"));
+                    return Err(error);
+                }
                 if !ui.retry(stage.as_str(), &displayed)? {
                     return Err(error.context(format!("{stage} aborted")));
                 }
@@ -1049,6 +1057,7 @@ mod tests {
     }
     #[tokio::test]
     async fn reboot_retry_waits_for_reopen_without_a_second_shutdown() {
+        let _loopback_lock = crate::LOOPBACK_LISTENER_TEST_LOCK.lock().await;
         let listener = tokio::net::TcpListener::bind((Ipv4Addr::LOCALHOST, 0))
             .await
             .unwrap();

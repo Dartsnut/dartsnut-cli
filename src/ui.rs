@@ -1,10 +1,11 @@
 use anyhow::{Context, Result, bail};
 use crossterm::{
     cursor::{Hide, Show},
-    event::{self, Event, KeyCode, KeyEvent, KeyModifiers},
+    event::{self, Event, EventStream, KeyCode, KeyEvent, KeyModifiers},
     execute,
     terminal::{EnterAlternateScreen, LeaveAlternateScreen, disable_raw_mode, enable_raw_mode},
 };
+use futures_util::StreamExt;
 use ratatui::{
     Terminal,
     backend::CrosstermBackend,
@@ -19,7 +20,7 @@ use zeroize::Zeroizing;
 
 use crate::{
     discovery::{OpenTarget, ScanTarget},
-    ssh::CommandOutput,
+    ssh::{CancelReason, CommandOutput},
 };
 
 /// The action selected on the scan result screen when no SSH service was found.
@@ -94,6 +95,12 @@ impl Ui {
             results: Vec::new(),
             scope: String::new(),
         })
+    }
+
+    pub fn setup_running(&mut self) -> Result<()> {
+        let message = "Running setup.sh. Press Esc, q, or Ctrl+C to cancel; cancellation may leave partial changes.";
+        self.logs.push(message.to_owned());
+        self.draw("Installer", vec![Line::from(message)], None)
     }
 
     /// Render one completed port-22 scan attempt.
@@ -419,6 +426,54 @@ impl Ui {
     }
 }
 
+pub async fn wait_for_setup_cancel() -> CancelReason {
+    let mut events = EventStream::new();
+    let ctrl_c = tokio::signal::ctrl_c();
+    tokio::pin!(ctrl_c);
+
+    #[cfg(unix)]
+    {
+        use tokio::signal::unix::{SignalKind, signal};
+
+        let Ok(mut hangup) = signal(SignalKind::hangup()) else {
+            return CancelReason::Signal;
+        };
+        let Ok(mut terminate) = signal(SignalKind::terminate()) else {
+            return CancelReason::Signal;
+        };
+        tokio::select! {
+            reason = wait_for_cancel_key(&mut events) => reason,
+            _ = &mut ctrl_c => CancelReason::Signal,
+            _ = hangup.recv() => CancelReason::TerminalLost,
+            _ = terminate.recv() => CancelReason::Signal,
+        }
+    }
+
+    #[cfg(not(unix))]
+    {
+        tokio::select! {
+            reason = wait_for_cancel_key(&mut events) => reason,
+            _ = &mut ctrl_c => CancelReason::Signal,
+        }
+    }
+}
+
+async fn wait_for_cancel_key(events: &mut EventStream) -> CancelReason {
+    while let Some(event) = events.next().await {
+        match event {
+            Ok(Event::Key(key)) if is_cancel_key(key) => return CancelReason::User,
+            Ok(_) => {}
+            Err(_) => return CancelReason::TerminalLost,
+        }
+    }
+    CancelReason::TerminalLost
+}
+
+fn is_cancel_key(key: KeyEvent) -> bool {
+    matches!(key.code, KeyCode::Esc | KeyCode::Char('q' | 'Q'))
+        || (matches!(key.code, KeyCode::Char('c' | 'C'))
+            && key.modifiers.contains(KeyModifiers::CONTROL))
+}
 impl Drop for Ui {
     fn drop(&mut self) {
         let _ = disable_raw_mode();
@@ -461,7 +516,8 @@ fn display_input(value: &str, masked: bool) -> String {
 }
 #[cfg(test)]
 mod tests {
-    use super::UiPhase;
+    use super::{UiPhase, is_cancel_key};
+    use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
     #[test]
     fn credentials_are_gated_until_final_scan_results() {
@@ -475,6 +531,27 @@ mod tests {
     fn typed_credentials_are_only_available_after_default_prompt() {
         assert!(!UiPhase::Results.input_allowed());
         assert!(UiPhase::Credentials.input_allowed());
+        assert!(UiPhase::Installing.input_allowed());
+    }
+
+    #[test]
+    fn setup_cancellation_keys_are_distinct_from_normal_keys() {
+        assert!(is_cancel_key(KeyEvent::new(
+            KeyCode::Esc,
+            KeyModifiers::NONE
+        )));
+        assert!(is_cancel_key(KeyEvent::new(
+            KeyCode::Char('q'),
+            KeyModifiers::NONE
+        )));
+        assert!(is_cancel_key(KeyEvent::new(
+            KeyCode::Char('c'),
+            KeyModifiers::CONTROL
+        )));
+        assert!(!is_cancel_key(KeyEvent::new(
+            KeyCode::Char('c'),
+            KeyModifiers::NONE
+        )));
         assert!(UiPhase::Installing.input_allowed());
     }
 }

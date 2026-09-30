@@ -164,6 +164,7 @@ mod tests {
 
     #[tokio::test]
     async fn detects_open_and_closed_local_port() {
+        let _loopback_lock = crate::LOOPBACK_LISTENER_TEST_LOCK.lock().await;
         let listener = TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).unwrap();
         let port = listener.local_addr().unwrap().port();
         let target = ScanTarget {
