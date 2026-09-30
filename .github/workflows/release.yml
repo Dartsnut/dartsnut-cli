@@ -75,6 +75,11 @@ jobs:
         run: cp "target/${{ matrix.target }}/release/dartsnut-rpi-installer" "${{ matrix.asset }}"
         shell: bash
 
+      - name: Run native release binary
+        if: ${{ !matrix.cross }}
+        run: "./${{ matrix.asset }} --version"
+        shell: bash
+
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.asset }}

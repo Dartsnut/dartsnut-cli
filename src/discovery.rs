@@ -59,7 +59,9 @@ pub async fn build_scan_targets(ip: Option<&str>) -> Result<Vec<ScanTarget>> {
             }
         }
         for hostname in ["dartsnut.local", "raspberrypi.local"] {
-            if let Ok(resolved) = lookup_host((hostname, 22)).await {
+            if let Ok(Ok(resolved)) =
+                timeout(Duration::from_secs(2), lookup_host((hostname, 22))).await
+            {
                 for socket in resolved {
                     if let IpAddr::V4(address) = socket.ip() {
                         by_address
