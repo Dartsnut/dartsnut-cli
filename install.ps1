@@ -43,7 +43,7 @@ try {
         [System.Security.AccessControl.PropagationFlags]::None,
         [System.Security.AccessControl.AccessControlType]::Allow
     ))
-    [System.IO.Directory]::CreateDirectory($tempDirectory, $directoryAcl) | Out-Null
+    [System.IO.FileSystemAclExtensions]::CreateDirectory($directoryAcl, $tempDirectory) | Out-Null
 
     $releaseUrl = "$releaseRoot/$asset"
     Invoke-WebRequest -Uri $releaseUrl -OutFile $binaryPath -UseBasicParsing -ErrorAction Stop
